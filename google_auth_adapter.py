@@ -7,19 +7,13 @@ class GoogleAuthAdapter(IAuthClient):
         self._gauth = gauth
 
     def authenticate(self):
-        self._gauth.settings['access_type'] = 'offline' # Request a refresh token
-        self._gauth.settings['api_version'] = 'v3' # Set API version to v3
+        # Load client secrets
+        self._gauth.LoadClientConfigFile("client_secrets.json")
         # Try to load saved client credentials
         self._gauth.LoadCredentialsFile("credentials.json")
-        if self._gauth.credentials is None:
-            # Authenticate if they're not there
+        if self._gauth.credentials is None or self._gauth.access_token_expired:
+            # Authenticate if they're not there or expired
             self._gauth.LocalWebserverAuth()
-        elif self._gauth.access_token_expired:
-            # Refresh them if expired
-            self._gauth.Refresh()
-        else:
-            # Initialize the saved creds
-            self._gauth.Authorize()
         # Save the current credentials to a file
         self._gauth.SaveCredentialsFile("credentials.json")
 
